@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "P8105 hw2 "
 author: "Jiawei Ye"
 output: github_document
 ---
@@ -10,10 +10,19 @@ library(tidyverse)
 ```
 
 ##Problem 1
-The following code chunk reads the data.
-```{r read_data}
-nyc_transit = read.csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
-nyc_transit
-
+The following code chunk reads the data and do some cleaning.
+```{r read_clean}
+data_read = read.csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+  janitor::clean_names()
+nyc_transit = select(data_read, line:vending, ada, -exit_only) %>% 
+  mutate(entry = recode(entry,"YES" = TRUE, "NO" = FALSE))
+names(nyc_transit)
 ```
+
+The above code chunk retained variables about the station and discarded the variables about the entrances of the station. It also changed the value of `entry` variable into logical value. The dimension of the dataset is `r nrow(nyc_transit)` rows and `r ncol(nyc_transit)` columns.  
+
+The dataset describes the subway stations in NYC, including the names of the stations, the routes that run through each station, the latitude and logitude of the station and ways to enter each station, whether the station has a vending machine, and ADA compliance.  
+
+The dataset is not really tidy enough. The `route` variable needs to be combined in some way.  
+
 
