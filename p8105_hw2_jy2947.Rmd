@@ -38,11 +38,32 @@ The output shows that there are `r nrow(distinct(nyc_transit, station_name, line
 ```
 
 ##Problem 2
-```{r loading}
+```{r trash_wheel}
 mtw = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", 
                  sheet = 1, range = cell_cols("A:N")) %>% 
   janitor::clean_names() %>% 
-  filter(dumpster != "NA")
-mtw
+  filter(!is.na(date))
+mtw$sports_balls = round(mtw$sports_balls, digits = 0)
+mtw$sports_balls = as.integer(mtw$sports_balls)
+prcpt17 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
+                     sheet = "2017 Precipitation", 
+                     skip = 1) %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(month), !is.na(total)) %>% 
+  mutate(year = 2017)
+  
+prcpt16 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
+                     sheet = "2016 Precipitation",
+                     skip = 1) %>%
+  janitor::clean_names() %>% 
+    filter(!is.na(total), !is.na(month)) %>% 
+  mutate(year = 2016)
+prcpt = full_join(prcpt16, prcpt17, by = "month") %>% 
+  mutate(month = month.name) %>% 
+  rename(total_2016 = total.x, total_2017 = total.y)
+mtw2016 = filter(mtw, year == 2016) 
 ```
+
+The trash wheel dataset has `r nrow(mtw)` observations. The key variable is `dumpster`, which identifies a certain dumpster.   
+The precipitation dataset has `r nrow(prcpt)` observations. the total precipitation in 2017 is `r sum(prcpt17$total)`.  The median number of sports balls in 2016 is `r median(mtw2016$sports_balls)`.  
 
