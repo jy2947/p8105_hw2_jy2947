@@ -7,6 +7,7 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(readxl)
 ```
 
 ##Problem 1
@@ -31,3 +32,17 @@ vending_proportion = 100 * nrow(filter(nyc_transit, vending == "NO"))/nrow(nyc_t
 ```
 
 The output shows that there are `r nrow(distinct(nyc_transit, station_name, line))` distinct stations. `r sum(nyc_transit$ada)` stations are ADA compliant. `r round(vending_proportion,2)`% of the entrance/exits is not vending allowed.  
+
+```{r reformat_data}
+
+```
+
+##Problem 2
+```{r loading}
+mtw = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", 
+                 sheet = 1, range = cell_cols("A:N")) %>% 
+  janitor::clean_names() %>% 
+  filter(dumpster != "NA")
+mtw
+```
+
