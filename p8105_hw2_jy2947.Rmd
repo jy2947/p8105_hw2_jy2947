@@ -21,8 +21,13 @@ names(nyc_transit)
 
 The above code chunk retained variables about the station and discarded the variables about the entrances of the station. It also changed the value of `entry` variable into logical value. The dimension of the dataset is `r nrow(nyc_transit)` rows and `r ncol(nyc_transit)` columns.  
 
-The dataset describes the subway stations in NYC, including the names of the stations, the routes that run through each station, the latitude and logitude of the station and ways to enter each station, whether the station has a vending machine, and ADA compliance.  
+Each observation in the dataset is a subway station entrances/exits in NYC, the variables describe stations name of the entrance/exit, the routes that run through it, the latitude and logitude of the station and ways to enter each station, whether the entrance/exit has a vending allow entrance, and ADA compliance.  
 
 The dataset is not really tidy enough. The `route` variable needs to be combined in some way.  
+```{r info_nyc_transit}
+nrow(distinct(nyc_transit, station_name, line))
+sum(nyc_transit$ada)
+vending_proportion = 100 * nrow(filter(nyc_transit, vending == "NO"))/nrow(nyc_transit)
+```
 
-
+The output shows that there are `r nrow(distinct(nyc_transit, station_name, line))` distinct stations. `r sum(nyc_transit$ada)` stations are ADA compliant. `r round(vending_proportion,2)`% of the entrance/exits is not vending allowed.  
