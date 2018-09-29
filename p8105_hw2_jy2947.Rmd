@@ -1,0 +1,19 @@
+---
+title: "Untitled"
+author: "Jiawei Ye"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+##Problem 1
+The following code chunk reads the data.
+```{r read_data}
+nyc_transit = read.csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
+nyc_transit
+
+```
+
