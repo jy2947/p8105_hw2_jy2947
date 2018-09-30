@@ -67,3 +67,23 @@ mtw2016 = filter(mtw, year == 2016)
 The trash wheel dataset has `r nrow(mtw)` observations. The key variable is `dumpster`, which identifies a certain dumpster.   
 The precipitation dataset has `r nrow(prcpt)` observations. the total precipitation in 2017 is `r sum(prcpt17$total)`.  The median number of sports balls in 2016 is `r median(mtw2016$sports_balls)`.  
 
+##Problem 3
+
+```{r load_data}
+devtools::install_github("p8105/p8105.datasets")
+library(p8105.datasets)
+data("brfss_smart2010")
+
+```
+
+
+```{r tidy_brfss}
+tidy_brfss_smart2010 = 
+  brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  filter(topic == "Overall Health") %>% 
+  select(-class, -topic, -question, -sample_size, confidence_limit_low:data_value_footnote)
+
+
+```
+
