@@ -17,7 +17,6 @@ data_read = read.csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names()
 nyc_transit = select(data_read, line:vending, ada, -exit_only) %>% 
   mutate(entry = recode(entry,"YES" = TRUE, "NO" = FALSE))
-names(nyc_transit)
 ```
 
 The above code chunk retained variables about the station and discarded the variables about the entrances of the station. It also changed the value of `entry` variable into logical value. The dimension of the dataset is `r nrow(nyc_transit)` rows and `r ncol(nyc_transit)` columns.  
@@ -69,21 +68,51 @@ The precipitation dataset has `r nrow(prcpt)` observations. the total precipitat
 
 ##Problem 3
 
-```{r load_data}
+The following code chunk loads data. 
+```{r load_data , warning = FALSE}
 devtools::install_github("p8105/p8105.datasets")
 library(p8105.datasets)
 data("brfss_smart2010")
 
 ```
 
-
+The following code chunk cleans the data. 
 ```{r tidy_brfss}
 tidy_brfss_smart2010 = 
   brfss_smart2010 %>% 
-  janitor::clean_names() %>% 
+  janitor::clean_names() %>%
   filter(topic == "Overall Health") %>% 
-  select(-class, -topic, -question, -sample_size, confidence_limit_low:data_value_footnote)
+  select(-class, -topic, -question, -sample_size, -c(confidence_limit_low:geo_location)) %>% 
+  filter(!is.na(data_value)) %>%
+  spread(response, data_value) %>% 
+  janitor::clean_names() %>% 
+  mutate(exce_or_vg = excellent + very_good)
+```
+
+The following code chunk prepares for the answers to the questions. 
+```{r answers}
+unq_loca = nrow(distinct(tidy_brfss_smart2010, locationdesc))
+num_states = nrow(distinct(tidy_brfss_smart2010, locationabbr))
+c_state = 
+  count(tidy_brfss_smart2010, locationabbr) %>% 
+  arrange(desc(n))
+top_n(c_state, 1)
+data_2002 = filter(tidy_brfss_smart2010, year == "2002")
+m_exc = median(data_2002$excellent)
+```
+There are `r unq_loca` unique locations in the dataset. The number of states represented is `r num_states` therefore every state is represented. New Jersy is observed the most.  
+In 2002, the median of the "Excellent" response value is `r m_exc`.  
 
 
+The following code chunk creats graphs.  
+```{r graphs}
+ggplot(data_2002, aes(x = excellent)) +
+         geom_histogram()
+ny_q_rsp = 
+  filter(tidy_brfss_smart2010, 
+         (year >= 2002) & (year <= 2010), 
+         (locationdesc == "NY - New York County") | (locationdesc == "NY - Queens County"))
+ggplot(ny_q_rsp, aes(x = year, y = excellent)) + 
+        geom_point(aes(color = locationdesc), size = 2)
 ```
 
