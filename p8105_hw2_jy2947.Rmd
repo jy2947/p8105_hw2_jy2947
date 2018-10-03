@@ -13,23 +13,28 @@ library(readxl)
 ##Problem 1
 The following code chunk reads the data and do some cleaning.
 ```{r read_clean}
-data_read = read.csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
-  janitor::clean_names()
-nyc_transit = select(data_read, line:vending, ada, -exit_only) %>% 
+nyc_transit = read.csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+  janitor::clean_names() %>% 
+  select(line:vending, ada, -exit_only) %>% 
   mutate(entry = recode(entry,"YES" = TRUE, "NO" = FALSE))
 ```
 
-The cleaning steps in the above code chunk retained variables about the entrance/exits of a station and discarded more detailed information such as longitude/latitude of a specific entrance. It also changed the value of `entry` variable into logical value. The dimension of the dataset is `r nrow(nyc_transit)` rows and `r ncol(nyc_transit)` columns. Each observation in the dataset is a subway station entrances/exits in NYC, the variables contains the stations name of the entrance/exit, the routes that run through it, the latitude and logitude of the station and ways to enter each station, whether the entrance/exit has a vending allow entrance, and ADA compliance. The dataset is not really tidy enough. The `route` variable needs to be combined in some way.  
+The cleaning steps in the above code chunk retained variables about the entrance/exits of a station and discarded more detailed information such as longitude/latitude of a specific entrance. It also changed the value of `entry` variable into logical value. The dimension of the dataset is `r nrow(nyc_transit)` rows and `r ncol(nyc_transit)` columns. Each observation in the dataset is a subway station entrances/exits in NYC, the variables contains the stations name of the entrance/exit, the routes that run through it, the latitude and logitude of the station and ways to enter each station, whether the entrance/exit has vending, and ADA compliance. The dataset is not really tidy enough. The `route` variable needs to be combined in some way.  
 
-The following code chunk creates a tibble for distinct stations.
+The following code chunk creates a tibble for distinct stations and do calculation.
 ```{r info_nyc_transit}
+
 dst_station = distinct(nyc_transit, station_name, line, .keep_all = TRUE)
 n_dist_sta = nrow(dst_station)
 n_ada_cmplt_stat = sum(dst_station$ada)
-vending_proportion = 100 * nrow(filter(nyc_transit, vending == "NO"))/nrow(nyc_transit)
+
+no_vending = nrow(filter(nyc_transit, vending == "NO"))
+y_entrance = nrow(filter(nyc_transit, vending == "NO", entry == "TRUE"))
+vending_proportion = (y_entrance/no_vending)*100
+
 ```
 
-The code chunk shows that there are `r n_dist_sta` distinct stations. `r n_ada_cmplt_stat` stations are ADA compliant. `r round(vending_proportion,2)`% of the entrance/exits is not vending allowed.  
+The code chunk shows that there are `r n_dist_sta` distinct stations. `r n_ada_cmplt_stat` stations are ADA compliant. `r round(vending_proportion,2)`% of the entrances/exits without vending allow entrance.  
 
 The following code chunk reformats the dataset. 
 ```{r reformat_data}
@@ -58,6 +63,7 @@ mtw = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
   filter(!is.na(date))
 mtw$sports_balls = round(mtw$sports_balls, digits = 0)
 mtw$sports_balls = as.integer(mtw$sports_balls)
+
 prcpt17 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
                      sheet = "2017 Precipitation", 
                      skip = 1) %>% 
@@ -69,17 +75,20 @@ prcpt16 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
                      sheet = "2016 Precipitation",
                      skip = 1) %>%
   janitor::clean_names() %>% 
-    filter(!is.na(total), !is.na(month)) %>% 
+  filter(!is.na(total), !is.na(month)) %>% 
   mutate(year = 2016)
+
 prcpt = full_join(prcpt16, prcpt17, by = "month") %>% 
   mutate(month = month.name) %>% 
   rename(total_2016 = total.x, total_2017 = total.y)
-mtw2016 = filter(mtw, year == 2016) 
+
+median_ball_2016 = median(filter(mtw, year == 2016)$sports_balls)
+
+
 ```
 
-#join might be wrong
 The trash wheel dataset has `r nrow(mtw)` observations. The key variable is `dumpster`, which identifies a certain dumpster. The dataset has information about the weight/number/volume of each kind of trash the dumpster collect, the date the trash are collected, and the number of homes these trash can power.  
-The precipitation dataset has `r nrow(prcpt)` observations. the total precipitation in 2017 is `r sum(prcpt17$total)`.  The key variable is `month`. The median number of sports balls in 2016 is `r median(mtw2016$sports_balls)`.  
+The precipitation dataset has `r nrow(prcpt)` observations. the total precipitation in 2017 is `r sum(prcpt17$total)`.  The key variable is `month`. The median number of sports balls in 2016 is `r median_ball_2016`.  
 
 ##Problem 3
 
@@ -93,9 +102,8 @@ data("brfss_smart2010")
 
 The following code chunk cleans the data. 
 ```{r tidy_brfss}
-tidy_brfss_smart2010 = 
-  brfss_smart2010 %>% 
-  janitor::clean_names() %>%
+brfss_smart2010 = 
+  janitor::clean_names(brfss_smart2010) %>%
   filter(topic == "Overall Health") %>% 
   select(-class, -topic, -question, -sample_size, 
          -c(confidence_limit_low:geo_location)) %>% 
@@ -107,28 +115,28 @@ tidy_brfss_smart2010 =
 
 The following code chunk prepares for the answers to the questions. 
 ```{r answers}
-unq_loca = nrow(distinct(tidy_brfss_smart2010, locationdesc))
-num_states = nrow(distinct(tidy_brfss_smart2010, locationabbr))
-c_state = 
-  count(tidy_brfss_smart2010, locationabbr) %>% 
-  arrange(desc(n))
-top_n(c_state, 1)
-data_2002 = filter(tidy_brfss_smart2010, year == "2002")
-m_exc = median(data_2002$excellent)
+unq_loca = nrow(distinct(brfss_smart2010, locationdesc))
+num_states = nrow(distinct(brfss_smart2010, locationabbr))
+brfss_smart2010 %>% 
+  count(locationabbr) %>% 
+  arrange(desc(n)) %>% 
+  top_n(1)
+m_exc = median(filter(brfss_smart2010, year == "2002")$excellent)
 ```
 There are `r unq_loca` unique locations in the dataset. The number of states represented is `r num_states` therefore every state is represented. New Jersy is observed the most.  
 In 2002, the median of the "Excellent" response value is `r m_exc`.  
 
 
-The following code chunk creats graphs.  
+The following code chunk creates graphs.  
 ```{r graphs}
-ggplot(data_2002, aes(x = excellent)) +
-         geom_histogram()
-ny_q_rsp = 
-  filter(tidy_brfss_smart2010, 
-         (year >= 2002) & (year <= 2010), 
-         (locationdesc == "NY - New York County") | (locationdesc == "NY - Queens County"))
-ggplot(ny_q_rsp, aes(x = year, y = excellent)) + 
+ggplot(filter(brfss_smart2010, year == "2002"),
+       aes(x = excellent)) +
+       geom_histogram()
+
+ggplot(filter(brfss_smart2010, 
+             (year >= 2002) & (year <= 2010), 
+              (locationdesc == "NY - New York County") | (locationdesc == "NY - Queens County")), 
+        aes(x = year, y = excellent)) + 
         geom_point(aes(color = locationdesc), size = 2)
 ```
 
