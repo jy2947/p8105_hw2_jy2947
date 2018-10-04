@@ -57,7 +57,7 @@ n_ada_cmplt_a_train = nrow(filter(rfmt_transit, route == "A", ada == TRUE))
 The following code chunk reads, cleans the Mr. Trash Wheel dataset and creates dataset for precipitation. 
 
 ```{r trash_wheel}
-mtw = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", 
+mtw = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", 
                  sheet = 1, range = cell_cols("A:N")) %>% 
   janitor::clean_names() %>% 
   filter(!is.na(date))
