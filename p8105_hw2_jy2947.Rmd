@@ -64,14 +64,14 @@ mtw = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx",
 mtw$sports_balls = round(mtw$sports_balls, digits = 0)
 mtw$sports_balls = as.integer(mtw$sports_balls)
 
-prcpt17 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
+prcpt17 = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx",
                      sheet = "2017 Precipitation", 
                      skip = 1) %>% 
   janitor::clean_names() %>% 
   filter(!is.na(month), !is.na(total)) %>% 
   mutate(year = 2017)
   
-prcpt16 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
+prcpt16 = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx",
                      sheet = "2016 Precipitation",
                      skip = 1) %>%
   janitor::clean_names() %>% 
